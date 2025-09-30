@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery RUL Monitoring</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Battery Remaining Useful Life Monitoring</h1>
+    </header>
+
+    <div class="dashboard">
+        <!-- Статус батареи -->
+        <div class="status-cards">
+            <div class="card">
+                <h3>Current Status</h3>
+                <div id="current-status" class="status">Loading...</div>
+            </div>
+
+            <div class="card">
+                <h3>Predicted RUL</h3>
+                <div id="predicted-rul" class="rul-value">-</div>
+            </div>
+
+            <div class="card">
+                <h3>Confidence Level</h3>
+                <div id="confidence-level" class="confidence">-</div>
+            </div>
+
+            <div class="card">
+                <h3>Current Cycle</h3>
+                <div id="current-cycle" class="cycle">-</div>
+            </div>
+        </div>
+
+        <!-- Графики -->
+        <div class="charts">
+            <div class="chart-container">
+                <h3>Capacity Degradation</h3>
+                <canvas id="capacity-chart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>Voltage & Temperature</h3>
+                <canvas id="voltage-temp-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Управление -->
+        <div class="controls">
+            <button onclick="predictRUL()">Update Prediction</button>
+            <button onclick="addSampleData()">Add Sample Data</button>
+            <button onclick="retrainModel()">Retrain Model</button>
+        </div>
+
+        <!-- Форма добавления данных -->
+        <div class="data-form">
+            <h3>Add New Battery Data</h3>
+            <form id="battery-data-form">
+                <input type="text" id="battery-id" placeholder="Battery ID" value="BATT001" required>
+                <input type="number" id="voltage" placeholder="Voltage (V)" step="0.01" required>
+                <input type="number" id="current" placeholder="Current (A)" step="0.01" required>
+                <input type="number" id="temperature" placeholder="Temperature (°C)" step="0.1" required>
+                <input type="number" id="capacity" placeholder="Capacity (Ah)" step="0.01" required>
+                <input type="number" id="cycle-number" placeholder="Cycle Number" required>
+                <button type="submit">Add Data</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
