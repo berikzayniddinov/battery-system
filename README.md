@@ -1,4 +1,3 @@
-````markdown
 # 🔋 Battery System – RUL Prediction
 
 Этот проект состоит из **Backend (FastAPI + SQLite)** и **Frontend (HTML, CSS, JS)** для работы с данными батарей и прогнозирования остаточного ресурса (Remaining Useful Life, RUL).
