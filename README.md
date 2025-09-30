@@ -8,7 +8,7 @@
 
 ### 1. Клонировать репозиторий
 ```bash
-git clone https://github.com/<твой_юзернейм>/battery-system.git
+git clone https://github.com/berikzayniddinov/battery-system.git
 cd battery-system
 ````
 
