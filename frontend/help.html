@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Guide - Battery RUL Monitoring</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Навигационный header -->
+    <header>
+        <div class="header-content">
+            <div class="header-left">
+                <a href="index.html" class="help-btn">← Back to Dashboard</a>
+            </div>
+            <div class="header-center">
+                <h1>System Guide & Documentation</h1>
+            </div>
+            <div class="header-right">
+                <span>Help Guide</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Контент справочника -->
+    <div class="container">
+        <div class="help-container">
+            <h2>📖 Battery RUL Monitoring System Guide</h2>
+
+            <div class="help-sections">
+                <!-- Секция обзора -->
+                <div class="help-section">
+                    <h3>🎯 System Overview</h3>
+                    <p>This system monitors battery health and predicts Remaining Useful Life (RUL) using machine learning. It provides real-time monitoring of battery parameters and forecasts when maintenance or replacement is needed.</p>
+                </div>
+
+                <!-- Секция кнопок управления -->
+                <div class="help-section">
+                    <h3>🔄 Control Buttons</h3>
+                    <div class="help-item">
+                        <h4>Update Prediction</h4>
+                        <p>Triggers a new RUL prediction using the latest battery data. The model analyzes historical patterns to forecast remaining cycles until battery capacity drops below 80% of original capacity.</p>
+                    </div>
+                    <div class="help-item">
+                        <h4>Add Sample Data</h4>
+                        <p>Generates and adds realistic battery data with simulated degradation. Useful for testing and demonstration without requiring physical battery measurements.</p>
+                    </div>
+                    <div class="help-item">
+                        <h4>Retrain Model</h4>
+                        <p>Retrains the machine learning model with all available historical data. Improves prediction accuracy as more data becomes available over time.</p>
+                    </div>
+                </div>
+
+                <!-- Секция графиков -->
+                <div class="help-section">
+                    <h3>📊 Charts & Visualizations</h3>
+                    <div class="help-item">
+                        <h4>Capacity Degradation</h4>
+                        <p>Shows battery capacity reduction over charge cycles. Steeper slopes indicate faster degradation. Normal batteries show gradual, linear capacity loss.</p>
+                    </div>
+                    <div class="help-item">
+                        <h4>Voltage & Temperature</h4>
+                        <p>Displays operational parameters during charge/discharge cycles. Abnormal voltage drops or temperature spikes may indicate battery health issues or safety concerns.</p>
+                    </div>
+                </div>
+
+                <!-- Секция данных -->
+                <div class="help-section">
+                    <h3>📝 Data Input Form</h3>
+                    <p>The form allows manual input of battery parameters for monitoring. All fields are required for accurate predictions:</p>
+                    <ul>
+                        <li><strong>Battery ID:</strong> Unique identifier for the battery unit</li>
+                        <li><strong>Voltage:</strong> Current voltage level in Volts (V)</li>
+                        <li><strong>Current:</strong> Electrical current in Amperes (A)</li>
+                        <li><strong>Temperature:</strong> Operating temperature in Celsius (°C)</li>
+                        <li><strong>Capacity:</strong> Current capacity in Ampere-hours (Ah)</li>
+                        <li><strong>Cycle Number:</strong> Total charge-discharge cycle count</li>
+                    </ul>
+                </div>
+
+                <!-- Секция интерпретации -->
+                <div class="help-section">
+                    <h3>🔍 Understanding Predictions</h3>
+                    <div class="help-item">
+                        <h4>RUL (Remaining Useful Life)</h4>
+                        <p>Estimated number of cycles until battery capacity drops below 80% of original capacity. Lower values indicate the battery is approaching end-of-life.</p>
+                    </div>
+                    <div class="help-item">
+                        <h4>Confidence Level</h4>
+                        <p>Model's certainty in the prediction (0-100%). Higher values indicate more reliable forecasts based on data quality and pattern consistency.</p>
+                    </div>
+                    <div class="help-item">
+                        <h4>Current Cycle</h4>
+                        <p>Total number of charge-discharge cycles the battery has undergone. Each cycle contributes to gradual capacity degradation.</p>
+                    </div>
+                </div>
+
+                <!-- Секция технических деталей -->
+                <div class="help-section">
+                    <h3>⚙️ Technical Details</h3>
+                    <div class="help-item">
+                        <h4>Machine Learning Model</h4>
+                        <p>Uses Random Forest Regressor trained on historical battery data. The model considers capacity degradation trends, voltage characteristics, and temperature patterns.</p>
+                    </div>
+                    <div class="help-item">
+                        <h4>Data Processing</h4>
+                        <p>Automatically processes incoming data, detects anomalies, and updates predictions in real-time. System retrains periodically for improved accuracy.</p>
+                    </div>
+                    <div class="help-item">
+                        <h4>API Endpoints</h4>
+                        <p>Backend provides RESTful API for data management and predictions:</p>
+                        <ul>
+                            <li><code>POST /api/battery-data</code> - Add new battery measurements</li>
+                            <li><code>GET /api/battery-history/{battery_id}</code> - Get historical data</li>
+                            <li><code>GET /api/predict-rul/{battery_id}</code> - Get RUL prediction</li>
+                            <li><code>POST /api/retrain-model</code> - Retrain ML model</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <a href="index.html" class="back-btn">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
