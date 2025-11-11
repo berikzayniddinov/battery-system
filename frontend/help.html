@@ -49,6 +49,19 @@
                         <h4>Retrain Model</h4>
                         <p>Retrains the machine learning model with all available historical data. Improves prediction accuracy as more data becomes available over time.</p>
                     </div>
+
+                    <!-- Ограничения -->
+                    <div class="help-item">
+                        <h4>⚠️ Data Addition Limits</h4>
+                        <p>To ensure system stability and prevent excessive load on the model and charts, data addition has the following limitations:</p>
+                        <ul>
+                            <li>✅ Maximum of <strong>10 samples</strong> can be added at a time.</li>
+                            <li>⏱ New data can be added only once every <strong>30 seconds</strong>.</li>
+                            <li>🚫 Excessive additions will trigger a warning message.</li>
+                            <li>🧠 The system automatically ignores duplicate or unrealistic data points.</li>
+                        </ul>
+                        <p>These restrictions help maintain consistent performance and reliable model behavior.</p>
+                    </div>
                 </div>
 
                 <!-- Секция графиков -->
@@ -70,12 +83,13 @@
                     <p>The form allows manual input of battery parameters for monitoring. All fields are required for accurate predictions:</p>
                     <ul>
                         <li><strong>Battery ID:</strong> Unique identifier for the battery unit</li>
-                        <li><strong>Voltage:</strong> Current voltage level in Volts (V)</li>
-                        <li><strong>Current:</strong> Electrical current in Amperes (A)</li>
-                        <li><strong>Temperature:</strong> Operating temperature in Celsius (°C)</li>
-                        <li><strong>Capacity:</strong> Current capacity in Ampere-hours (Ah)</li>
-                        <li><strong>Cycle Number:</strong> Total charge-discharge cycle count</li>
+                        <li><strong>Voltage:</strong> Current voltage level in Volts (V) — <em>typically between 2.5 V and 4.3 V</em></li>
+                        <li><strong>Current:</strong> Electrical current in Amperes (A) — <em>commonly ranges from -5 A (discharge) to +5 A (charge)</em></li>
+                        <li><strong>Temperature:</strong> Operating temperature in Celsius (°C) — <em>safe range: 15 °C to 60 °C</em></li>
+                        <li><strong>Capacity:</strong> Current capacity in Ampere-hours (Ah) — <em>depends on battery type, usually 1.0 Ah to 3.5 Ah</em></li>
+                        <li><strong>Cycle Number:</strong> Total charge-discharge cycle count — <em>typically 0 to 1000+</em></li>
                     </ul>
+                    <p class="note">⚙️ <strong>Note:</strong> Values outside these ranges may be considered anomalous and ignored by the system’s validation layer to prevent data corruption.</p>
                 </div>
 
                 <!-- Секция интерпретации -->
