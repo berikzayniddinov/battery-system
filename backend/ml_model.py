@@ -62,7 +62,7 @@ class BatteryRULPredictor:
     def train(self, db: Session):
         """Обучение модели на исторических данных"""
         try:
-            # Получение данных из БД
+            # Получение данных из БД (все данные для обучения)
             battery_data = db.query(BatteryData).all()
 
             if len(battery_data) < 10:
@@ -101,7 +101,7 @@ class BatteryRULPredictor:
             self.model.fit(X_scaled, y)
 
             self.is_trained = True
-            print("Модель успешно обучена")
+            print(f"Модель успешно обучена на {len(battery_data)} записях")
             return True
 
         except Exception as e:
@@ -111,6 +111,7 @@ class BatteryRULPredictor:
     def predict(self, battery_data: list):
         """Предсказание RUL для новых данных"""
         if not self.is_trained or self.model is None:
+            print("Модель не обучена")
             return None, 0.0
 
         try:
@@ -121,6 +122,7 @@ class BatteryRULPredictor:
             features_data = self.prepare_features(df)
 
             if not features_data:
+                print("Не удалось подготовить признаки для предсказания")
                 return None, 0.0
 
             X = [features_data[0][0]]
@@ -128,6 +130,7 @@ class BatteryRULPredictor:
 
             prediction = self.model.predict(X_scaled)[0]
 
+            # Confidence на основе близости к обучающим данным
             confidence = min(0.95, max(0.1, 1.0 - abs(prediction - 500) / 1000))
 
             return max(0, prediction), confidence
@@ -144,11 +147,15 @@ class BatteryRULPredictor:
                 'scaler': self.scaler,
                 'is_trained': self.is_trained
             }, filepath)
+            print(f"Модель сохранена в {filepath}")
 
     def load_model(self, filepath):
         """Загрузка модели"""
         if os.path.exists(filepath):
-            loaded = joblib.load(filepath)
+            loaded = joblib.dump(filepath)
             self.model = loaded['model']
             self.scaler = loaded['scaler']
             self.is_trained = loaded['is_trained']
+            print(f"Модель загружена из {filepath}")
+        else:
+            print(f"Файл {filepath} не найден")

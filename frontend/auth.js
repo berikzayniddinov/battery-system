@@ -74,20 +74,41 @@ function getAuthHeaders() {
  * Fetch с автоматической авторизацией
  */
 async function authFetch(url, options = {}) {
-    const defaultOptions = {
-        headers: getAuthHeaders(),
-        ...options
-    };
+    const token = getAccessToken();
 
-    const response = await fetch(url, defaultOptions);
-
-    // Если токен истек или невалиден - редирект на login
-    if (response.status === 401) {
+    // Если токена нет - редирект на login
+    if (!token) {
         logout();
-        throw new Error('Unauthorized');
+        throw new Error('No token available');
     }
 
-    return response;
+    // Объединяем заголовки
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...(options.headers || {})
+    };
+
+    const defaultOptions = {
+        ...options,
+        headers: headers
+    };
+
+    try {
+        const response = await fetch(url, defaultOptions);
+
+        // Если токен истек или невалиден - редирект на login
+        if (response.status === 401) {
+            console.error('401 Unauthorized - token expired or invalid');
+            logout();
+            throw new Error('Unauthorized');
+        }
+
+        return response;
+    } catch (error) {
+        console.error('authFetch error:', error);
+        throw error;
+    }
 }
 
 /**
@@ -95,6 +116,10 @@ async function authFetch(url, options = {}) {
  */
 function updateUserInfo() {
     const username = getUsername();
+    const token = getAccessToken();
+
+    console.log('UpdateUserInfo called:', { username, hasToken: !!token });
+
     const userInfoElements = document.querySelectorAll('.user-info');
 
     userInfoElements.forEach(el => {

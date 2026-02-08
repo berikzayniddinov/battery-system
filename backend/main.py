@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -64,54 +64,139 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 # -------- BATTERY --------
 @app.post("/api/battery-data")
 def add_battery(data: BatteryIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    record = BatteryData(
-        **data.dict(),
-        owner_id=user.id
-    )
-    db.add(record)
-    db.commit()
-    predictor.train(db)
-    return {"status": "ok", "id": record.id}
+    """Добавление новых данных от батареи"""
+    try:
+        record = BatteryData(
+            voltage=data.voltage,
+            current=data.current,
+            temperature=data.temperature,
+            capacity=data.capacity,
+            cycle_number=data.cycle_number,
+            battery_id=data.battery_id,
+            owner_id=user.id
+        )
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+
+        # Переобучаем модель
+        predictor.train(db)
+
+        return {"status": "ok", "id": record.id, "message": "Data added successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/api/predict-rul/{battery_id}")
-def predict(battery_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    data = db.query(BatteryData).filter(
+@app.get("/api/battery-history/{battery_id}")
+def get_battery_history(
+        battery_id: str,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_user)
+):
+    """Получение исторических данных батареи"""
+    battery_data = db.query(BatteryData).filter(
         BatteryData.battery_id == battery_id,
         BatteryData.owner_id == user.id
     ).order_by(BatteryData.timestamp).all()
 
-    if not data:
-        raise HTTPException(404, "No data")
+    return {
+        "battery_id": battery_id,
+        "data": [
+            {
+                "timestamp": record.timestamp.isoformat(),
+                "voltage": record.voltage,
+                "current": record.current,
+                "temperature": record.temperature,
+                "capacity": record.capacity,
+                "cycle_number": record.cycle_number
+            }
+            for record in battery_data
+        ]
+    }
 
-    history = [
-        {
-            'voltage': r.voltage,
-            'current': r.current,
-            'temperature': r.temperature,
-            'capacity': r.capacity,
-            'cycle_number': r.cycle_number
-        } for r in data
-    ]
 
-    rul, conf = predictor.predict(history)
+@app.get("/api/predict-rul/{battery_id}")
+def predict_rul(
+        battery_id: str,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_user)
+):
+    """Получение предсказания RUL для батареи"""
+    try:
+        # Получаем данные батареи для текущего пользователя
+        battery_data = db.query(BatteryData).filter(
+            BatteryData.battery_id == battery_id,
+            BatteryData.owner_id == user.id
+        ).order_by(BatteryData.timestamp).all()
 
-    if rul is None:
-        raise HTTPException(400, "Prediction failed")
+        if not battery_data:
+            raise HTTPException(status_code=404, detail="No battery data found")
 
-    pred_record = PredictionResult(
-        battery_id=battery_id,
-        predicted_rul=rul,
-        confidence=conf,
-        features=json.dumps(history[-1]),
-        owner_id=user.id
-    )
-    db.add(pred_record)
-    db.commit()
+        # Подготовка данных для предсказания
+        history = [
+            {
+                'voltage': r.voltage,
+                'current': r.current,
+                'temperature': r.temperature,
+                'capacity': r.capacity,
+                'cycle_number': r.cycle_number
+            } for r in battery_data
+        ]
 
-    return {"battery_id": battery_id, "rul": round(rul, 2), "confidence": round(conf, 2)}
+        # Предсказание
+        predicted_rul, confidence = predictor.predict(history)
+
+        if predicted_rul is None:
+            raise HTTPException(status_code=400, detail="Prediction failed")
+
+        # Сохранение результата предсказания
+        pred_record = PredictionResult(
+            battery_id=battery_id,
+            predicted_rul=predicted_rul,
+            confidence=confidence,
+            features=json.dumps(history[-1]),
+            owner_id=user.id
+        )
+        db.add(pred_record)
+        db.commit()
+
+        return {
+            "battery_id": battery_id,
+            "predicted_rul": round(predicted_rul, 2),
+            "rul": round(predicted_rul, 2),  # Добавляем для совместимости с frontend
+            "confidence": round(confidence, 2),
+            "current_cycle": battery_data[-1].cycle_number,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/retrain-model")
+def retrain_model(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Переобучение модели"""
+    try:
+        success = predictor.train(db)
+        return {"success": success, "message": "Model retrained successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Retraining failed: {str(e)}")
 
 
 @app.get("/api/health")
-def health():
-    return {"status": "ok", "model_trained": predictor.is_trained}
+def health_check():
+    """Проверка состояния системы"""
+    return {
+        "status": "healthy",
+        "model_trained": predictor.is_trained,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

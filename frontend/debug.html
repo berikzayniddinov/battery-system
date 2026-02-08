@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug - Battery RUL System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="auth.js"></script>
+    <style>
+        .debug-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .debug-section h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .debug-value {
+            font-family: monospace;
+            background: #34495e;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .status-ok {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔍 Authentication Debug Panel</h1>
+
+        <div class="debug-section">
+            <h3>Token Status</h3>
+            <div id="token-status"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>Access Token</h3>
+            <div id="token-value" class="debug-value"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>Username</h3>
+            <div id="username-value" class="debug-value"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>Token Decoded (JWT Payload)</h3>
+            <div id="token-decoded" class="debug-value"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>Test API Call</h3>
+            <button onclick="testAPICall()">Test /api/health</button>
+            <button onclick="testBatteryHistory()">Test /api/battery-history/BATT001</button>
+            <div id="api-result" class="debug-value" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>Actions</h3>
+            <button onclick="location.href='login.html'">Go to Login</button>
+            <button onclick="location.href='index.html'">Go to Dashboard</button>
+            <button onclick="clearAuth()">Clear Auth & Reload</button>
+        </div>
+    </div>
+
+    <script>
+        // Проверка токена при загрузке
+        window.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('access_token');
+            const username = localStorage.getItem('username');
+
+            // Статус
+            const statusEl = document.getElementById('token-status');
+            if (token) {
+                statusEl.innerHTML = '<span class="status-ok">✅ Token Found</span>';
+            } else {
+                statusEl.innerHTML = '<span class="status-error">❌ No Token - Please login first</span>';
+            }
+
+            // Токен
+            document.getElementById('token-value').textContent = token || 'No token';
+
+            // Username
+            document.getElementById('username-value').textContent = username || 'No username';
+
+            // Декодированный токен
+            if (token) {
+                try {
+                    const parts = token.split('.');
+                    if (parts.length === 3) {
+                        const payload = JSON.parse(atob(parts[1]));
+                        document.getElementById('token-decoded').textContent = JSON.stringify(payload, null, 2);
+                    }
+                } catch (e) {
+                    document.getElementById('token-decoded').textContent = 'Error decoding token: ' + e.message;
+                }
+            } else {
+                document.getElementById('token-decoded').textContent = 'No token to decode';
+            }
+        }
+
+        async function testAPICall() {
+            const resultEl = document.getElementById('api-result');
+            resultEl.textContent = 'Testing...';
+
+            try {
+                const token = localStorage.getItem('access_token');
+
+                const response = await fetch('http://localhost:8000/api/health', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                resultEl.textContent = `Status: ${response.status}\n` + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultEl.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testBatteryHistory() {
+            const resultEl = document.getElementById('api-result');
+            resultEl.textContent = 'Testing...';
+
+            try {
+                const token = localStorage.getItem('access_token');
+
+                if (!token) {
+                    resultEl.textContent = 'Error: No token found. Please login first.';
+                    return;
+                }
+
+                console.log('Testing with token:', token.substring(0, 20) + '...');
+
+                const response = await fetch('http://localhost:8000/api/battery-history/BATT001', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                resultEl.textContent = `Status: ${response.status}\n` + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultEl.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function clearAuth() {
+            localStorage.clear();
+            location.reload();
+        }
+    </script>
+</body>
+</html>

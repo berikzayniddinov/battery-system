@@ -156,6 +156,8 @@
             errorDiv.style.display = 'none';
             successDiv.style.display = 'none';
 
+            console.log('Attempting login for user:', username);
+
             try {
                 const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
@@ -164,11 +166,18 @@
                 });
 
                 const data = await response.json();
+                console.log('Login response:', { status: response.status, data });
 
                 if (response.ok) {
                     // Сохраняем токен
+                    console.log('Saving token:', data.access_token);
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('username', username);
+
+                    // Проверяем, что токен сохранился
+                    const savedToken = localStorage.getItem('access_token');
+                    console.log('Token saved successfully:', savedToken ? 'YES' : 'NO');
+                    console.log('Token length:', savedToken ? savedToken.length : 0);
 
                     successDiv.textContent = '✅ Login successful! Redirecting...';
                     successDiv.style.display = 'block';
