@@ -11,7 +11,6 @@ from ml_model import BatteryRULPredictor
 
 app = FastAPI(title="Battery RUL Prediction System")
 
-# CORS для фронтенда
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,7 +27,6 @@ predictor = BatteryRULPredictor()
 @app.on_event("startup")
 async def startup_event():
     db = next(get_db())
-    # Попытка обучения при запуске, если есть данные
     predictor.train(db)
 
 
@@ -52,7 +50,6 @@ async def add_battery_data(
         db.commit()
         db.refresh(battery_record)
 
-        # Переобучение модели при поступлении новых данных
         predictor.train(db)
 
         return {"message": "Data added successfully", "id": battery_record.id}

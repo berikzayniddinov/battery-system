@@ -6,6 +6,7 @@
     <title>Battery RUL Monitoring</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="auth.js"></script>
 </head>
 <body>
     <header>
@@ -17,15 +18,12 @@
                 <h1>Battery Remaining Useful Life Monitoring</h1>
             </div>
             <div class="header-right">
-                <span>Dashboard</span>
+                <span class="user-info">Dashboard</span>
+                <button class="logout-btn" onclick="logout()" style="margin-left: 15px;">🚪 Logout</button>
             </div>
         </div>
     </header>
 <div class="container">
-    <header>
-        <h1>Battery Remaining Useful Life Monitoring</h1>
-    </header>
-
     <div class="dashboard">
         <!-- Статус батареи -->
         <div class="status-cards">
@@ -87,5 +85,14 @@
 </div>
 
 <script src="script.js"></script>
+<script>
+    // Защита страницы - требует авторизации
+    if (!requireAuth()) {
+        // Если не авторизован - редирект на login уже произошел
+    } else {
+        // Обновляем информацию о пользователе
+        updateUserInfo();
+    }
+</script>
 </body>
 </html>

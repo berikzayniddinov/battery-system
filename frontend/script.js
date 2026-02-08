@@ -5,10 +5,14 @@ let capacityChart, voltageTempChart;
 // 🌐 Инициализация страницы
 // ===========================
 document.addEventListener('DOMContentLoaded', function() {
+    // Проверка авторизации
+    if (!requireAuth()) return;
+
     initializeCharts();
     loadBatteryData();
     setInterval(loadBatteryData, 30000); // Обновление каждые 30 секунд
     setupHelpTooltip();
+    updateUserInfo();
 });
 
 // ===========================
@@ -93,7 +97,7 @@ function initializeCharts() {
 async function loadBatteryData() {
     try {
         const batteryId = 'BATT001';
-        const historyResponse = await fetch(`${API_BASE}/battery-history/${batteryId}`);
+        const historyResponse = await authFetch(`${API_BASE}/battery-history/${batteryId}`);
         const historyData = await historyResponse.json();
 
         if (historyData.data && historyData.data.length > 0) {
@@ -146,12 +150,12 @@ function updateCurrentStatus(latestData) {
 async function predictRUL() {
     try {
         const batteryId = 'BATT001';
-        const response = await fetch(`${API_BASE}/predict-rul/${batteryId}`);
+        const response = await authFetch(`${API_BASE}/predict-rul/${batteryId}`);
         const prediction = await response.json();
 
-        document.getElementById('predicted-rul').textContent = `${prediction.predicted_rul} cycles`;
+        document.getElementById('predicted-rul').textContent = `${prediction.rul} cycles`;
         document.getElementById('confidence-level').textContent = `${(prediction.confidence * 100).toFixed(1)}%`;
-        document.getElementById('current-cycle').textContent = `${prediction.current_cycle} cycles`;
+        document.getElementById('current-cycle').textContent = `${prediction.current_cycle || 0} cycles`;
 
     } catch (error) {
         console.error('Error predicting RUL:', error);
@@ -179,9 +183,8 @@ async function addSampleData() {
             cycle_number: nextCycle
         };
 
-        const response = await fetch(`${API_BASE}/battery-data`, {
+        const response = await authFetch(`${API_BASE}/battery-data`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newData)
         });
 
@@ -192,6 +195,7 @@ async function addSampleData() {
 
     } catch (error) {
         console.error('Error adding sample data:', error);
+        alert('❌ Error adding sample data');
     }
 }
 
@@ -200,7 +204,7 @@ async function addSampleData() {
 // ===========================
 async function getLatestBatteryData(batteryId) {
     try {
-        const response = await fetch(`${API_BASE}/battery-history/${batteryId}`);
+        const response = await authFetch(`${API_BASE}/battery-history/${batteryId}`);
         const data = await response.json();
         return data.data[data.data.length - 1];
     } catch {
@@ -213,12 +217,13 @@ async function getLatestBatteryData(batteryId) {
 // ===========================
 async function retrainModel() {
     try {
-        const response = await fetch(`${API_BASE}/retrain-model`, { method: 'POST' });
+        const response = await authFetch(`${API_BASE}/retrain-model`, { method: 'POST' });
         const result = await response.json();
 
         alert(result.success ? '✅ Model retrained successfully!' : '❌ Model retraining failed: ' + result.message);
     } catch (error) {
         console.error('Error retraining model:', error);
+        alert('❌ Error retraining model');
     }
 }
 
@@ -247,9 +252,8 @@ document.getElementById('battery-data-form').addEventListener('submit', async fu
     };
 
     try {
-        const response = await fetch(`${API_BASE}/battery-data`, {
+        const response = await authFetch(`${API_BASE}/battery-data`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
 
@@ -257,10 +261,13 @@ document.getElementById('battery-data-form').addEventListener('submit', async fu
             alert('✅ Data added successfully!');
             this.reset();
             loadBatteryData();
-        } else alert('❌ Error adding data');
+        } else {
+            alert('❌ Error adding data');
+        }
 
     } catch (error) {
         console.error('Error submitting form:', error);
+        alert('❌ Network error');
     }
 });
 

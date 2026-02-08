@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Help Guide - Battery RUL Monitoring</title>
     <link rel="stylesheet" href="style.css">
+    <script src="auth.js"></script>
 </head>
 <body>
     <!-- Навигационный header -->
@@ -17,7 +18,8 @@
                 <h1>System Guide & Documentation</h1>
             </div>
             <div class="header-right">
-                <span>Help Guide</span>
+                <span class="user-info">Help Guide</span>
+                <button class="logout-btn" onclick="logout()" style="margin-left: 15px;">🚪 Logout</button>
             </div>
         </div>
     </header>
@@ -89,7 +91,7 @@
                         <li><strong>Capacity:</strong> Current capacity in Ampere-hours (Ah) — <em>depends on battery type, usually 1.0 Ah to 3.5 Ah</em></li>
                         <li><strong>Cycle Number:</strong> Total charge-discharge cycle count — <em>typically 0 to 1000+</em></li>
                     </ul>
-                    <p class="note">⚙️ <strong>Note:</strong> Values outside these ranges may be considered anomalous and ignored by the system’s validation layer to prevent data corruption.</p>
+                    <p class="note">⚙️ <strong>Note:</strong> Values outside these ranges may be considered anomalous and ignored by the system's validation layer to prevent data corruption.</p>
                 </div>
 
                 <!-- Секция интерпретации -->
@@ -138,5 +140,14 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Проверка авторизации при загрузке страницы
+        if (!requireAuth()) {
+            // Редирект на login произойдет автоматически
+        } else {
+            updateUserInfo();
+        }
+    </script>
 </body>
 </html>
